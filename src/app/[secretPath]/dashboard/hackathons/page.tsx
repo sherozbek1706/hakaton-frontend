@@ -363,8 +363,8 @@ export default function HackathonsManagementPage() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Hakatonlar</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <h1 className="text-2xl font-bold tracking-tight">Hakatonlar</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
             Hakaton yaratish, boshlanish vaqtlarini belgilash, vaqtincha
             to&apos;xtatish, vazifalar va ro&apos;yxatdan o&apos;tganlarni
             boshqarish
@@ -377,7 +377,7 @@ export default function HackathonsManagementPage() {
             size="sm"
             onClick={() => hackathonsQuery.refetch()}
             disabled={hackathonsQuery.isFetching}
-            className="h-8 text-xs bg-background"
+            className="h-9 text-sm bg-background"
           >
             <RefreshCw
               className={`mr-1.5 h-3.5 w-3.5 ${
@@ -389,7 +389,7 @@ export default function HackathonsManagementPage() {
           <Button
             size="sm"
             onClick={() => setCreateOpen(true)}
-            className="h-8 text-xs"
+            className="h-9 text-sm"
           >
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             Yangi hakaton yaratish
@@ -401,44 +401,44 @@ export default function HackathonsManagementPage() {
       <div className="grid gap-3.5 sm:grid-cols-4">
         <div className="rounded-xl border bg-card/95 p-4 shadow-[0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-xs">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">Jami hakatonlar</p>
+            <p className="text-sm text-muted-foreground">Jami hakatonlar</p>
             <Trophy className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
-          <p className="mt-2 text-2xl font-semibold tracking-tight">
+          <p className="mt-2 text-3xl font-bold tracking-tight">
             {totalHackathons}
           </p>
         </div>
 
         <div className="rounded-xl border bg-card/95 p-4 shadow-[0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-xs">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">Faol hakatonlar</p>
+            <p className="text-sm text-muted-foreground">Faol hakatonlar</p>
             <PlayCircle className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
-          <p className="mt-2 text-2xl font-semibold tracking-tight">
+          <p className="mt-2 text-3xl font-bold tracking-tight">
             {activeCount}
           </p>
         </div>
 
         <div className="rounded-xl border bg-card/95 p-4 shadow-[0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-xs">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Vaqtincha to&apos;xtatilgan
             </p>
             <PauseCircle className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
-          <p className="mt-2 text-2xl font-semibold tracking-tight">
+          <p className="mt-2 text-3xl font-bold tracking-tight">
             {pausedCount}
           </p>
         </div>
 
         <div className="rounded-xl border bg-card/95 p-4 shadow-[0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-xs">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Ro&apos;yxatdan o&apos;tganlar
             </p>
             <Users className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
-          <p className="mt-2 text-2xl font-semibold tracking-tight">
+          <p className="mt-2 text-3xl font-bold tracking-tight">
             {totalParticipants}
           </p>
         </div>
@@ -453,7 +453,7 @@ export default function HackathonsManagementPage() {
               placeholder="Hakaton nomi yoki manzil bo'yicha qidiruv..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 h-8 text-xs bg-background"
+              className="pl-8 h-9 text-sm bg-background"
             />
           </div>
 
@@ -484,7 +484,7 @@ export default function HackathonsManagementPage() {
           ) : hackathons.length === 0 ? (
             <div className="py-12 text-center">
               <p className="text-xs font-medium">Hakatonlar topilmadi</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-sm text-muted-foreground mt-0.5">
                 Yangi hakaton yaratish tugmasini bosing
               </p>
             </div>
@@ -492,16 +492,16 @@ export default function HackathonsManagementPage() {
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="pl-4 text-xs">Hakaton nomi</TableHead>
-                  <TableHead className="text-xs">Holati</TableHead>
-                  <TableHead className="text-xs">
+                  <TableHead className="pl-4 text-sm">Hakaton nomi</TableHead>
+                  <TableHead className="text-sm">Holati</TableHead>
+                  <TableHead className="text-sm">
                     Boshlanish & Tugash vaqti
                   </TableHead>
-                  <TableHead className="text-xs">
+                  <TableHead className="text-sm">
                     Ishtirokchilar
                   </TableHead>
-                  <TableHead className="text-xs">Vazifalar</TableHead>
-                  <TableHead className="text-right pr-4 text-xs">
+                  <TableHead className="text-sm">Vazifalar</TableHead>
+                  <TableHead className="text-right pr-4 text-sm">
                     Boshqaruv amallari
                   </TableHead>
                 </TableRow>
@@ -511,8 +511,8 @@ export default function HackathonsManagementPage() {
                   <TableRow key={h.id}>
                     <TableCell className="pl-4">
                       <div>
-                        <div className="font-medium text-xs">{h.title}</div>
-                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+                        <div className="font-medium text-sm">{h.title}</div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
                           {h.prize_pool && <span>{h.prize_pool}</span>}
                           {h.location && (
                             <span className="flex items-center gap-0.5">
@@ -532,11 +532,11 @@ export default function HackathonsManagementPage() {
                               ? "destructive"
                               : "secondary"
                           }
-                          className="text-[11px] font-normal"
+                          className="text-xs font-normal"
                         >
                           {STATUS_LABELS[h.status] || h.status}
                         </Badge>
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-sm text-muted-foreground">
                           {h.is_registration_open
                             ? "Qabul ochiq"
                             : "Qabul yopiq"}
@@ -549,7 +549,7 @@ export default function HackathonsManagementPage() {
                           <Calendar className="h-3 w-3 text-muted-foreground" />
                           <span>{formatDateTime(h.start_at)}</span>
                         </div>
-                        <div className="text-[11px] text-muted-foreground pl-4">
+                        <div className="text-sm text-muted-foreground pl-4">
                           Tugash: {formatDateTime(h.end_at)}
                         </div>
                       </div>
@@ -558,7 +558,7 @@ export default function HackathonsManagementPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-7 text-xs"
+                        className="h-8 text-xs"
                         onClick={() => {
                           setManageHackathonId(h.id);
                           setActiveTab("participants");
@@ -573,7 +573,7 @@ export default function HackathonsManagementPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-7 text-xs"
+                        className="h-8 text-xs"
                         onClick={() => {
                           setManageHackathonId(h.id);
                           setActiveTab("tasks");
@@ -588,7 +588,7 @@ export default function HackathonsManagementPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-7 text-xs"
+                          className="h-8 text-xs"
                           onClick={() => handleTogglePause(h)}
                           title={
                             h.status === "paused"
@@ -669,7 +669,7 @@ export default function HackathonsManagementPage() {
               <Label className="text-xs">Hakaton nomi *</Label>
               <Input
                 placeholder="Masalan: AI & Web Innovation Hackathon 2026"
-                className="h-8 text-xs"
+                className="h-9 text-sm"
                 {...createForm.register("title")}
               />
               {createForm.formState.errors.title && (
@@ -693,7 +693,7 @@ export default function HackathonsManagementPage() {
                 <Label className="text-xs">Qachon boshlanadi (Start)</Label>
                 <Input
                   type="datetime-local"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...createForm.register("start_at")}
                 />
               </div>
@@ -701,7 +701,7 @@ export default function HackathonsManagementPage() {
                 <Label className="text-xs">Qachon tugaydi (End)</Label>
                 <Input
                   type="datetime-local"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...createForm.register("end_at")}
                 />
               </div>
@@ -714,7 +714,7 @@ export default function HackathonsManagementPage() {
                 </Label>
                 <Input
                   type="datetime-local"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...createForm.register("registration_start_at")}
                 />
               </div>
@@ -724,7 +724,7 @@ export default function HackathonsManagementPage() {
                 </Label>
                 <Input
                   type="datetime-local"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...createForm.register("registration_end_at")}
                 />
               </div>
@@ -755,7 +755,7 @@ export default function HackathonsManagementPage() {
                 <Label className="text-xs">Mukofot jamg&apos;armasi</Label>
                 <Input
                   placeholder="50,000,000 UZS"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...createForm.register("prize_pool")}
                 />
               </div>
@@ -765,7 +765,7 @@ export default function HackathonsManagementPage() {
                 <Input
                   type="number"
                   placeholder="150"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...createForm.register("max_participants")}
                 />
               </div>
@@ -776,7 +776,7 @@ export default function HackathonsManagementPage() {
                 <Label className="text-xs">Manzil / Format</Label>
                 <Input
                   placeholder="Toshkent, IT Park / Online"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...createForm.register("location")}
                 />
               </div>
@@ -784,7 +784,7 @@ export default function HackathonsManagementPage() {
                 <Label className="text-xs">Min. jamoa a&apos;zosi</Label>
                 <Input
                   type="number"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...createForm.register("team_size_min")}
                 />
               </div>
@@ -792,7 +792,7 @@ export default function HackathonsManagementPage() {
                 <Label className="text-xs">Maks. jamoa a&apos;zosi</Label>
                 <Input
                   type="number"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...createForm.register("team_size_max")}
                 />
               </div>
@@ -812,7 +812,7 @@ export default function HackathonsManagementPage() {
                 <p className="text-xs font-medium">
                   Ro&apos;yxatdan o&apos;tish ochiq
                 </p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Ishtirokchilar ro&apos;yxatdan o&apos;ta olishi
                 </p>
               </div>
@@ -868,7 +868,7 @@ export default function HackathonsManagementPage() {
             <div className="space-y-1.5">
               <Label className="text-xs">Hakaton nomi *</Label>
               <Input
-                className="h-8 text-xs"
+                className="h-9 text-sm"
                 {...editForm.register("title")}
               />
               {editForm.formState.errors.title && (
@@ -891,7 +891,7 @@ export default function HackathonsManagementPage() {
                 <Label className="text-xs">Qachon boshlanadi (Start)</Label>
                 <Input
                   type="datetime-local"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...editForm.register("start_at")}
                 />
               </div>
@@ -899,7 +899,7 @@ export default function HackathonsManagementPage() {
                 <Label className="text-xs">Qachon tugaydi (End)</Label>
                 <Input
                   type="datetime-local"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...editForm.register("end_at")}
                 />
               </div>
@@ -912,7 +912,7 @@ export default function HackathonsManagementPage() {
                 </Label>
                 <Input
                   type="datetime-local"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...editForm.register("registration_start_at")}
                 />
               </div>
@@ -922,7 +922,7 @@ export default function HackathonsManagementPage() {
                 </Label>
                 <Input
                   type="datetime-local"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...editForm.register("registration_end_at")}
                 />
               </div>
@@ -953,7 +953,7 @@ export default function HackathonsManagementPage() {
               <div className="space-y-1.5">
                 <Label className="text-xs">Mukofot jamg&apos;armasi</Label>
                 <Input
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...editForm.register("prize_pool")}
                 />
               </div>
@@ -962,7 +962,7 @@ export default function HackathonsManagementPage() {
                 <Label className="text-xs">Maks. ishtirokchilar</Label>
                 <Input
                   type="number"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...editForm.register("max_participants")}
                 />
               </div>
@@ -972,7 +972,7 @@ export default function HackathonsManagementPage() {
               <div className="space-y-1.5">
                 <Label className="text-xs">Manzil / Format</Label>
                 <Input
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...editForm.register("location")}
                 />
               </div>
@@ -980,7 +980,7 @@ export default function HackathonsManagementPage() {
                 <Label className="text-xs">Min. jamoa a&apos;zosi</Label>
                 <Input
                   type="number"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...editForm.register("team_size_min")}
                 />
               </div>
@@ -988,7 +988,7 @@ export default function HackathonsManagementPage() {
                 <Label className="text-xs">Maks. jamoa a&apos;zosi</Label>
                 <Input
                   type="number"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...editForm.register("team_size_max")}
                 />
               </div>
@@ -1007,7 +1007,7 @@ export default function HackathonsManagementPage() {
                 <p className="text-xs font-medium">
                   Ro&apos;yxatdan o&apos;tish ochiq
                 </p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Qabulni vaqtinchalik yopish yoki ochish
                 </p>
               </div>
@@ -1077,7 +1077,7 @@ export default function HackathonsManagementPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 text-xs"
+                    className="h-8 text-xs"
                     onClick={() => handleTogglePause(managed)}
                   >
                     {managed.status === "paused" ? (
@@ -1103,7 +1103,7 @@ export default function HackathonsManagementPage() {
               type="button"
               variant={activeTab === "participants" ? "default" : "ghost"}
               size="sm"
-              className="h-8 text-xs"
+              className="h-9 text-sm"
               onClick={() => setActiveTab("participants")}
             >
               <Users className="mr-1.5 h-3.5 w-3.5" />
@@ -1115,7 +1115,7 @@ export default function HackathonsManagementPage() {
               type="button"
               variant={activeTab === "tasks" ? "default" : "ghost"}
               size="sm"
-              className="h-8 text-xs"
+              className="h-9 text-sm"
               onClick={() => setActiveTab("tasks")}
             >
               <ListChecks className="mr-1.5 h-3.5 w-3.5" />
@@ -1126,7 +1126,7 @@ export default function HackathonsManagementPage() {
               type="button"
               variant={activeTab === "settings" ? "default" : "ghost"}
               size="sm"
-              className="h-8 text-xs"
+              className="h-9 text-sm"
               onClick={() => setActiveTab("settings")}
             >
               <Settings2 className="mr-1.5 h-3.5 w-3.5" />
@@ -1149,10 +1149,10 @@ export default function HackathonsManagementPage() {
                     placeholder="Ishtirokchi, jamoa, tel bo'yicha qidirish..."
                     value={participantSearch}
                     onChange={(e) => setParticipantSearch(e.target.value)}
-                    className="pl-8 h-8 text-xs"
+                    className="pl-8 h-9 text-sm"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Jami: {filteredParticipants.length} nafar ishtirokchi
                 </p>
               </div>
@@ -1169,11 +1169,11 @@ export default function HackathonsManagementPage() {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="text-xs pl-3">F.I.Sh</TableHead>
-                        <TableHead className="text-xs">Aloqa</TableHead>
-                        <TableHead className="text-xs">
+                        <TableHead className="text-sm">Aloqa</TableHead>
+                        <TableHead className="text-sm">
                           Jamoa & Yo&apos;nalish
                         </TableHead>
-                        <TableHead className="text-xs">Holati</TableHead>
+                        <TableHead className="text-sm">Holati</TableHead>
                         <TableHead className="text-xs text-right pr-3">
                           Amal
                         </TableHead>
@@ -1183,22 +1183,22 @@ export default function HackathonsManagementPage() {
                       {filteredParticipants.map((p) => (
                         <TableRow key={p.id}>
                           <TableCell className="pl-3">
-                            <div className="font-medium text-xs">
+                            <div className="font-medium text-sm">
                               {p.full_name}
                             </div>
-                            <div className="text-[11px] text-muted-foreground">
+                            <div className="text-sm text-muted-foreground">
                               {p.username ? `@${p.username}` : "—"}
                             </div>
                           </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
+                          <TableCell className="text-sm text-muted-foreground">
                             <div>{p.phone || "—"}</div>
-                            <div className="text-[11px]">{p.email || ""}</div>
+                            <div className="text-xs">{p.email || ""}</div>
                           </TableCell>
                           <TableCell>
                             <div className="text-xs font-medium">
                               {p.team_name || "Yakka"}
                             </div>
-                            <div className="text-[11px] text-muted-foreground">
+                            <div className="text-sm text-muted-foreground">
                               {p.direction || "—"}
                             </div>
                           </TableCell>
@@ -1254,7 +1254,7 @@ export default function HackathonsManagementPage() {
                     Hakatondagi barcha vazifalar ({managed.tasks?.length || 0}{" "}
                     ta)
                   </p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     Yangi vazifa qo&apos;shishingiz yoki umumiy barcha
                     vazifalarni birdaniga o&apos;chirishingiz mumkin
                   </p>
@@ -1265,7 +1265,7 @@ export default function HackathonsManagementPage() {
                     type="button"
                     variant="destructive"
                     size="sm"
-                    className="h-8 text-xs"
+                    className="h-9 text-sm"
                     onClick={() => setConfirmClearTasksOpen(true)}
                   >
                     <Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -1279,14 +1279,14 @@ export default function HackathonsManagementPage() {
                 onSubmit={taskForm.handleSubmit(handleAddTask)}
                 className="rounded-xl border p-3.5 space-y-3"
               >
-                <p className="text-xs font-semibold">
+                <p className="text-sm font-semibold">
                   Yangi vazifa qo&apos;shish
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
                   <div className="sm:col-span-2">
                     <Input
                       placeholder="Vazifa sarlavhasi *"
-                      className="h-8 text-xs"
+                      className="h-9 text-sm"
                       {...taskForm.register("title")}
                     />
                   </div>
@@ -1294,14 +1294,14 @@ export default function HackathonsManagementPage() {
                     <Input
                       type="number"
                       placeholder="Maks. ball (100)"
-                      className="h-8 text-xs"
+                      className="h-9 text-sm"
                       {...taskForm.register("max_score")}
                     />
                   </div>
                   <div>
                     <Input
                       type="datetime-local"
-                      className="h-8 text-xs"
+                      className="h-9 text-sm"
                       {...taskForm.register("deadline_at")}
                     />
                   </div>
@@ -1309,13 +1309,13 @@ export default function HackathonsManagementPage() {
                 <div className="flex gap-2">
                   <Input
                     placeholder="Vazifa tavsifi va shartlari (ixtiyoriy)..."
-                    className="h-8 text-xs flex-1"
+                    className="h-9 text-sm flex-1"
                     {...taskForm.register("description")}
                   />
                   <Button
                     type="submit"
                     size="sm"
-                    className="h-8 text-xs"
+                    className="h-9 text-sm"
                     disabled={createTaskMutation.isPending}
                   >
                     <Plus className="mr-1 h-3.5 w-3.5" />
@@ -1340,23 +1340,23 @@ export default function HackathonsManagementPage() {
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs text-muted-foreground">
+                          <span className="font-mono text-sm text-muted-foreground">
                             #{idx + 1}
                           </span>
-                          <span className="text-xs font-semibold">
+                          <span className="text-sm font-semibold">
                             {task.title}
                           </span>
-                          <Badge variant="secondary" className="text-[10px]">
+                          <Badge variant="secondary" className="text-xs">
                             {task.max_score} ball
                           </Badge>
                         </div>
                         {task.description && (
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-sm text-muted-foreground">
                             {task.description}
                           </p>
                         )}
                         {task.deadline_at && (
-                          <p className="text-[11px] text-muted-foreground">
+                          <p className="text-sm text-muted-foreground">
                             Muddat: {formatDateTime(task.deadline_at)}
                           </p>
                         )}
@@ -1385,8 +1385,8 @@ export default function HackathonsManagementPage() {
             <div className="space-y-4 py-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="rounded-xl border p-3.5 space-y-2">
-                  <p className="text-xs font-semibold">Hakaton holati</p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-sm font-semibold">Hakaton holati</p>
+                  <p className="text-sm text-muted-foreground">
                     Hakatonni istalgan vaqtda vaqtincha to&apos;xtatish,
                     faollashtirish yoki yakunlash
                   </p>
@@ -1405,7 +1405,7 @@ export default function HackathonsManagementPage() {
                         type="button"
                         size="sm"
                         variant={managed.status === st ? "default" : "outline"}
-                        className="h-7 text-xs"
+                        className="h-8 text-xs"
                         onClick={() =>
                           statusMutation.mutate({
                             id: managed.id,
@@ -1422,10 +1422,10 @@ export default function HackathonsManagementPage() {
                 <div className="rounded-xl border p-3.5 space-y-2">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-semibold">
+                      <p className="text-sm font-semibold">
                         Ro&apos;yxatdan o&apos;tish holati
                       </p>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-sm text-muted-foreground">
                         Yangi ishtirokchilar qabulini boshqarish
                       </p>
                     </div>
@@ -1439,7 +1439,7 @@ export default function HackathonsManagementPage() {
                       }
                     />
                   </div>
-                  <div className="pt-2 text-xs text-muted-foreground space-y-1">
+                  <div className="pt-2 text-sm text-muted-foreground space-y-1">
                     <div>
                       Boshlanish vaqti:{" "}
                       <span className="text-foreground font-medium">
@@ -1460,7 +1460,7 @@ export default function HackathonsManagementPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   onClick={() => {
                     const target = managed;
                     setManageHackathonId(null);

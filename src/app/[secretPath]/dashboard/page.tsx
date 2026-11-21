@@ -216,8 +216,8 @@ export default function AdminsDashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Adminlar</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <h1 className="text-2xl font-bold tracking-tight">Adminlar</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
             Tizim administratorlarini qo&apos;shish, tahrirlash va nazorat qilish
           </p>
         </div>
@@ -228,7 +228,7 @@ export default function AdminsDashboardPage() {
             size="sm"
             onClick={() => adminsQuery.refetch()}
             disabled={adminsQuery.isFetching}
-            className="h-8 text-xs bg-background"
+            className="h-9 text-sm bg-background"
           >
             <RefreshCw
               className={`mr-1.5 h-3.5 w-3.5 ${
@@ -240,7 +240,7 @@ export default function AdminsDashboardPage() {
           <Button
             size="sm"
             onClick={() => setCreateOpen(true)}
-            className="h-8 text-xs"
+            className="h-9 text-sm"
           >
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             Admin qo&apos;shish
@@ -252,30 +252,30 @@ export default function AdminsDashboardPage() {
       <div className="grid gap-3.5 sm:grid-cols-3">
         <div className="rounded-xl border bg-card/95 p-4 shadow-[0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-xs">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">Jami adminlar</p>
+            <p className="text-sm text-muted-foreground">Jami adminlar</p>
             <Users className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
-          <p className="mt-2 text-2xl font-semibold tracking-tight">
+          <p className="mt-2 text-3xl font-bold tracking-tight">
             {totalAdmins}
           </p>
         </div>
 
         <div className="rounded-xl border bg-card/95 p-4 shadow-[0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-xs">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">Super adminlar</p>
+            <p className="text-sm text-muted-foreground">Super adminlar</p>
             <Shield className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
-          <p className="mt-2 text-2xl font-semibold tracking-tight">
+          <p className="mt-2 text-3xl font-bold tracking-tight">
             {superAdminsCount}
           </p>
         </div>
 
         <div className="rounded-xl border bg-card/95 p-4 shadow-[0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-xs">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">Faol hisoblar</p>
+            <p className="text-sm text-muted-foreground">Faol hisoblar</p>
             <UserCheck className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
-          <p className="mt-2 text-2xl font-semibold tracking-tight">
+          <p className="mt-2 text-3xl font-bold tracking-tight">
             {activeAdminsCount}
           </p>
         </div>
@@ -290,7 +290,7 @@ export default function AdminsDashboardPage() {
               placeholder="Qidiruv (ism, username, tel)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 h-8 text-xs bg-background"
+              className="pl-8 h-9 text-sm bg-background"
             />
           </div>
 
@@ -327,7 +327,7 @@ export default function AdminsDashboardPage() {
           ) : admins.length === 0 ? (
             <div className="py-12 text-center">
               <p className="text-xs font-medium">Adminlar topilmadi</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-sm text-muted-foreground mt-0.5">
                 Qidiruv so&apos;rovini o&apos;zgartiring yoki yangi admin qo&apos;shing
               </p>
             </div>
@@ -335,13 +335,13 @@ export default function AdminsDashboardPage() {
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-14 pl-4 text-xs">ID</TableHead>
-                  <TableHead className="text-xs">F.I.Sh & Username</TableHead>
-                  <TableHead className="text-xs">Telefon</TableHead>
-                  <TableHead className="text-xs">Rol</TableHead>
-                  <TableHead className="text-xs">Holati</TableHead>
-                  <TableHead className="text-xs">Sana</TableHead>
-                  <TableHead className="text-right pr-4 text-xs">
+                  <TableHead className="w-14 pl-4 text-sm">ID</TableHead>
+                  <TableHead className="text-sm">F.I.Sh & Username</TableHead>
+                  <TableHead className="text-sm">Telefon</TableHead>
+                  <TableHead className="text-sm">Rol</TableHead>
+                  <TableHead className="text-sm">Holati</TableHead>
+                  <TableHead className="text-sm">Sana</TableHead>
+                  <TableHead className="text-right pr-4 text-sm">
                     Amallar
                   </TableHead>
                 </TableRow>
@@ -351,33 +351,33 @@ export default function AdminsDashboardPage() {
                   const isSelf = currentAdmin?.id === item.id;
                   return (
                     <TableRow key={item.id}>
-                      <TableCell className="pl-4 font-mono text-xs text-muted-foreground">
+                      <TableCell className="pl-4 font-mono text-sm text-muted-foreground">
                         #{item.id}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2.5">
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border bg-secondary text-[11px] font-medium">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border bg-secondary text-xs font-medium">
                             {item.full_name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <div className="flex items-center gap-1.5 font-medium text-xs">
+                            <div className="flex items-center gap-1.5 font-medium text-sm">
                               <span>{item.full_name}</span>
                               {isSelf && (
                                 <Badge
                                   variant="outline"
-                                  className="h-4 px-1.5 text-[10px] font-normal"
+                                  className="h-4 px-1.5 text-xs font-normal"
                                 >
                                   Siz
                                 </Badge>
                               )}
                             </div>
-                            <div className="text-[11px] text-muted-foreground">
+                            <div className="text-sm text-muted-foreground">
                               @{item.username}
                             </div>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
+                      <TableCell className="text-sm text-muted-foreground">
                         {item.phone || "—"}
                       </TableCell>
                       <TableCell>
@@ -385,7 +385,7 @@ export default function AdminsDashboardPage() {
                           variant={
                             item.role === "super_admin" ? "default" : "secondary"
                           }
-                          className="text-[11px] font-normal"
+                          className="text-xs font-normal"
                         >
                           {item.role === "super_admin" ? "Super Admin" : "Admin"}
                         </Badge>
@@ -405,12 +405,12 @@ export default function AdminsDashboardPage() {
                             disabled={isSelf}
                             onCheckedChange={() => handleQuickToggleStatus(item)}
                           />
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-sm text-muted-foreground">
                             {item.is_active ? "Faol" : "Nofaol"}
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
+                      <TableCell className="text-sm text-muted-foreground">
                         {new Date(item.created_at).toLocaleDateString("uz-UZ")}
                       </TableCell>
                       <TableCell className="text-right pr-4">
@@ -476,7 +476,7 @@ export default function AdminsDashboardPage() {
               <Input
                 id="create-full_name"
                 placeholder="Sardor Alimov"
-                className="h-8 text-xs"
+                className="h-9 text-sm"
                 {...createForm.register("full_name")}
               />
               {createForm.formState.errors.full_name && (
@@ -494,7 +494,7 @@ export default function AdminsDashboardPage() {
                 <Input
                   id="create-username"
                   placeholder="sardor_admin"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...createForm.register("username")}
                 />
                 {createForm.formState.errors.username && (
@@ -511,7 +511,7 @@ export default function AdminsDashboardPage() {
                 <Input
                   id="create-phone"
                   placeholder="+998901234567"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...createForm.register("phone")}
                 />
               </div>
@@ -526,7 +526,7 @@ export default function AdminsDashboardPage() {
                   id="create-password"
                   type="password"
                   placeholder="Kamida 6 ta belgi"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...createForm.register("password")}
                 />
                 {createForm.formState.errors.password && (
@@ -557,7 +557,7 @@ export default function AdminsDashboardPage() {
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div>
                 <p className="text-xs font-medium">Faol hisob</p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Tizimga kirishga ruxsat
                 </p>
               </div>
@@ -615,7 +615,7 @@ export default function AdminsDashboardPage() {
               </Label>
               <Input
                 id="edit-full_name"
-                className="h-8 text-xs"
+                className="h-9 text-sm"
                 {...editForm.register("full_name")}
               />
               {editForm.formState.errors.full_name && (
@@ -632,7 +632,7 @@ export default function AdminsDashboardPage() {
                 </Label>
                 <Input
                   id="edit-username"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...editForm.register("username")}
                 />
                 {editForm.formState.errors.username && (
@@ -648,7 +648,7 @@ export default function AdminsDashboardPage() {
                 </Label>
                 <Input
                   id="edit-phone"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...editForm.register("phone")}
                 />
               </div>
@@ -663,7 +663,7 @@ export default function AdminsDashboardPage() {
                   id="edit-password"
                   type="password"
                   placeholder="O'zgartirmaslik uchun bo'sh"
-                  className="h-8 text-xs"
+                  className="h-9 text-sm"
                   {...editForm.register("password")}
                 />
               </div>
@@ -689,7 +689,7 @@ export default function AdminsDashboardPage() {
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div>
                 <p className="text-xs font-medium">Faollik holati</p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   {isEditingSelf
                     ? "O'zingizning hisobingizni nofaol qila olmaysiz"
                     : "Nofaol bo'lsa tizimga kira olmaydi"}
@@ -752,12 +752,12 @@ export default function AdminsDashboardPage() {
                       {detailQuery.data.full_name}
                     </p>
                     {currentAdmin?.id === detailQuery.data.id && (
-                      <Badge variant="outline" className="text-[10px] h-4 px-1.5">
+                      <Badge variant="outline" className="text-xs h-4 px-1.5">
                         Siz
                       </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     @{detailQuery.data.username}
                   </p>
                 </div>
@@ -821,7 +821,7 @@ export default function AdminsDashboardPage() {
                 </div>
               </>
             ) : (
-              <p className="text-xs text-muted-foreground">Topilmadi</p>
+              <p className="text-sm text-muted-foreground">Topilmadi</p>
             )}
           </div>
         </SheetContent>
