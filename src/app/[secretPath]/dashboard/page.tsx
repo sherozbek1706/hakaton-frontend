@@ -15,6 +15,7 @@ import {
   Shield,
   UserCheck,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,6 +52,7 @@ import {
   useUpdateAdminMutation,
   useDeleteAdminMutation,
 } from "@/hooks/use-admins";
+import { useAdminAuthStore } from "@/store/use-admin-auth-store";
 import type { Admin, AdminRole } from "@/types/admin";
 
 const createAdminFormSchema = z.object({
@@ -76,6 +78,8 @@ const editAdminFormSchema = z.object({
 type EditAdminFormValues = z.infer<typeof editAdminFormSchema>;
 
 export default function AdminsDashboardPage() {
+  const { admin: currentAdmin, updateCurrentAdmin } = useAdminAuthStore();
+
   const [search, setSearch] = React.useState("");
   const [roleFilter, setRoleFilter] = React.useState("all");
   const [statusFilter, setStatusFilter] = React.useState("all");
@@ -100,6 +104,10 @@ export default function AdminsDashboardPage() {
   const totalAdmins = admins.length;
   const superAdminsCount = admins.filter((a) => a.role === "super_admin").length;
   const activeAdminsCount = admins.filter((a) => a.is_active).length;
+
+  const isEditingSelf = Boolean(
+    editAdmin && currentAdmin && editAdmin.id === currentAdmin.id
+  );
 
   const createForm = useForm<CreateAdminFormValues>({
     resolver: zodResolver(createAdminFormSchema),
@@ -153,7 +161,13 @@ export default function AdminsDashboardPage() {
 
   const handleEditSubmit = async (values: EditAdminFormValues) => {
     if (!editAdmin) return;
-    await updateMutation.mutateAsync({
+
+    if (isEditingSelf && !values.is_active) {
+      toast.error("Siz o'zingizning hisobingizni nofaol qila olmaysiz");
+      return;
+    }
+
+    const res = await updateMutation.mutateAsync({
       id: editAdmin.id,
       payload: {
         full_name: values.full_name,
@@ -163,21 +177,36 @@ export default function AdminsDashboardPage() {
           ? { password: values.password.trim() }
           : {}),
         role: values.role,
-        is_active: values.is_active,
+        is_active: isEditingSelf ? true : values.is_active,
       },
     });
+
+    if (isEditingSelf && res?.data) {
+      updateCurrentAdmin(res.data);
+    }
+
     setEditAdmin(null);
   };
 
-  const handleQuickToggleStatus = (admin: Admin) => {
+  const handleQuickToggleStatus = (targetAdmin: Admin) => {
+    if (currentAdmin && targetAdmin.id === currentAdmin.id) {
+      toast.error("Siz o'zingizning hisobingizni nofaol qila olmaysiz");
+      return;
+    }
+
     updateMutation.mutate({
-      id: admin.id,
-      payload: { is_active: !admin.is_active },
+      id: targetAdmin.id,
+      payload: { is_active: !targetAdmin.is_active },
     });
   };
 
   const handleConfirmDelete = async () => {
     if (!deleteAdmin) return;
+    if (currentAdmin && deleteAdmin.id === currentAdmin.id) {
+      toast.error("Siz o'zingizning hisobingizni o'chira olmaysiz");
+      setDeleteAdmin(null);
+      return;
+    }
     await deleteMutation.mutateAsync(deleteAdmin.id);
     setDeleteAdmin(null);
   };
@@ -318,84 +347,108 @@ export default function AdminsDashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {admins.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="pl-4 font-mono text-xs text-muted-foreground">
-                      #{item.id}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border bg-secondary text-[11px] font-medium">
-                          {item.full_name.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="font-medium text-xs">
-                            {item.full_name}
+                {admins.map((item) => {
+                  const isSelf = currentAdmin?.id === item.id;
+                  return (
+                    <TableRow key={item.id}>
+                      <TableCell className="pl-4 font-mono text-xs text-muted-foreground">
+                        #{item.id}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border bg-secondary text-[11px] font-medium">
+                            {item.full_name.charAt(0).toUpperCase()}
                           </div>
-                          <div className="text-[11px] text-muted-foreground">
-                            @{item.username}
+                          <div>
+                            <div className="flex items-center gap-1.5 font-medium text-xs">
+                              <span>{item.full_name}</span>
+                              {isSelf && (
+                                <Badge
+                                  variant="outline"
+                                  className="h-4 px-1.5 text-[10px] font-normal"
+                                >
+                                  Siz
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-[11px] text-muted-foreground">
+                              @{item.username}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {item.phone || "—"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          item.role === "super_admin" ? "default" : "secondary"
-                        }
-                        className="text-[11px] font-normal"
-                      >
-                        {item.role === "super_admin" ? "Super Admin" : "Admin"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          size="sm"
-                          checked={item.is_active}
-                          onCheckedChange={() => handleQuickToggleStatus(item)}
-                        />
-                        <span className="text-xs text-muted-foreground">
-                          {item.is_active ? "Faol" : "Nofaol"}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {new Date(item.created_at).toLocaleDateString("uz-UZ")}
-                    </TableCell>
-                    <TableCell className="text-right pr-4">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => setViewAdminId(item.id)}
-                          title="Ko'rish"
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {item.phone || "—"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            item.role === "super_admin" ? "default" : "secondary"
+                          }
+                          className="text-[11px] font-normal"
                         >
-                          <Eye className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => setEditAdmin(item)}
-                          title="Tahrirlash"
+                          {item.role === "super_admin" ? "Super Admin" : "Admin"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div
+                          className="flex items-center gap-2"
+                          title={
+                            isSelf
+                              ? "O'zingizning hisobingizni nofaol qila olmaysiz"
+                              : undefined
+                          }
                         >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => setDeleteAdmin(item)}
-                          title="O'chirish"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          <Switch
+                            size="sm"
+                            checked={item.is_active}
+                            disabled={isSelf}
+                            onCheckedChange={() => handleQuickToggleStatus(item)}
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            {item.is_active ? "Faol" : "Nofaol"}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {new Date(item.created_at).toLocaleDateString("uz-UZ")}
+                      </TableCell>
+                      <TableCell className="text-right pr-4">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => setViewAdminId(item.id)}
+                            title="Ko'rish"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => setEditAdmin(item)}
+                            title="Tahrirlash"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            disabled={isSelf}
+                            onClick={() => !isSelf && setDeleteAdmin(item)}
+                            title={
+                              isSelf
+                                ? "O'zingizni o'chira olmaysiz"
+                                : "O'chirish"
+                            }
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
@@ -548,6 +601,7 @@ export default function AdminsDashboardPage() {
             <DialogTitle>Adminni tahrirlash</DialogTitle>
             <DialogDescription>
               #{editAdmin?.id} — @{editAdmin?.username}
+              {isEditingSelf ? " (Sizning profilingiz)" : ""}
             </DialogDescription>
           </DialogHeader>
 
@@ -636,13 +690,17 @@ export default function AdminsDashboardPage() {
               <div>
                 <p className="text-xs font-medium">Faollik holati</p>
                 <p className="text-[11px] text-muted-foreground">
-                  Nofaol bo&apos;lsa tizimga kira olmaydi
+                  {isEditingSelf
+                    ? "O'zingizning hisobingizni nofaol qila olmaysiz"
+                    : "Nofaol bo'lsa tizimga kira olmaydi"}
                 </p>
               </div>
               <Switch
                 size="sm"
                 checked={editForm.watch("is_active")}
+                disabled={isEditingSelf}
                 onCheckedChange={(checked) =>
+                  !isEditingSelf &&
                   editForm.setValue("is_active", Boolean(checked))
                 }
               />
@@ -689,9 +747,16 @@ export default function AdminsDashboardPage() {
             ) : detailQuery.data ? (
               <>
                 <div className="rounded-lg border p-3.5">
-                  <p className="text-sm font-semibold">
-                    {detailQuery.data.full_name}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold">
+                      {detailQuery.data.full_name}
+                    </p>
+                    {currentAdmin?.id === detailQuery.data.id && (
+                      <Badge variant="outline" className="text-[10px] h-4 px-1.5">
+                        Siz
+                      </Badge>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     @{detailQuery.data.username}
                   </p>
@@ -739,18 +804,20 @@ export default function AdminsDashboardPage() {
                   >
                     Tahrirlash
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 text-xs"
-                    onClick={() => {
-                      const target = detailQuery.data!;
-                      setViewAdminId(null);
-                      setDeleteAdmin(target);
-                    }}
-                  >
-                    O&apos;chirish
-                  </Button>
+                  {currentAdmin?.id !== detailQuery.data.id && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-xs"
+                      onClick={() => {
+                        const target = detailQuery.data!;
+                        setViewAdminId(null);
+                        setDeleteAdmin(target);
+                      }}
+                    >
+                      O&apos;chirish
+                    </Button>
+                  )}
                 </div>
               </>
             ) : (
