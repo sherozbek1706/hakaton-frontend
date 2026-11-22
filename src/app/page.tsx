@@ -2,16 +2,15 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
   Users,
   Trophy,
   GraduationCap,
   UserCheck,
   Calendar,
+  Clock,
   MapPin,
   ListChecks,
   ArrowRight,
@@ -22,10 +21,7 @@ import {
   Sparkles,
   User,
 } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -40,73 +36,44 @@ import { useUserAuthStore } from "@/store/use-user-auth-store";
 import { translations } from "@/lib/i18n";
 import {
   usePublicOverviewQuery,
-  useUserLoginMutation,
-  useUserRegisterMutation,
+  useMyHackathonsQuery,
 } from "@/hooks/use-public-overview";
-
-const loginSchema = z.object({
-  username: z.string().min(2),
-  password: z.string().min(4),
-});
-
-const registerSchema = z.object({
-  full_name: z.string().min(2),
-  username: z.string().min(3),
-  password: z.string().min(6),
-});
+import {
+  StudentAuthFlow,
+  type AuthStep,
+} from "@/components/student-auth-flow";
 
 export default function PublicLandingPage() {
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { lang, setLang } = useAppStore();
-  const { user, isAuthenticated, setUserAuth, logoutUser } = useUserAuthStore();
+  const { user, token, isAuthenticated, needsProfileCompletion, logoutUser } =
+    useUserAuthStore();
   const t = translations[lang];
 
   const overviewQuery = usePublicOverviewQuery();
-  const loginMutation = useUserLoginMutation();
-  const registerMutation = useUserRegisterMutation();
+  const myHackathonsQuery = useMyHackathonsQuery(
+    isAuthenticated ? token : null
+  );
 
-  const [authModalMode, setAuthModalMode] = React.useState<
-    "login" | "register" | null
-  >(null);
+  const [authModalStep, setAuthModalStep] = React.useState<AuthStep | null>(
+    null
+  );
 
-  const loginForm = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { username: "", password: "" },
-  });
-
-  const registerForm = useForm<z.infer<typeof registerSchema>>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: { full_name: "", username: "", password: "" },
-  });
-
-  const handleLoginSubmit = async (values: z.infer<typeof loginSchema>) => {
-    try {
-      const res = await loginMutation.mutateAsync(values);
-      setUserAuth(res.user, res.token);
-      toast.success(t.auth.loginSuccess);
-      loginForm.reset();
-      setAuthModalMode(null);
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Error");
+  React.useEffect(() => {
+    if (isAuthenticated && needsProfileCompletion) {
+      setAuthModalStep("complete-profile");
     }
-  };
-
-  const handleRegisterSubmit = async (
-    values: z.infer<typeof registerSchema>
-  ) => {
-    try {
-      const res = await registerMutation.mutateAsync(values);
-      setUserAuth(res.user, res.token);
-      toast.success(t.auth.registerSuccess);
-      registerForm.reset();
-      setAuthModalMode(null);
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Error");
-    }
-  };
+  }, [isAuthenticated, needsProfileCompletion]);
 
   const overview = overviewQuery.data;
   const hackathons = overview?.hackathons || [];
+  const myHackathons = myHackathonsQuery.data || [];
+
+  const registeredIds = React.useMemo(
+    () => new Set(myHackathons.map((m) => m.id)),
+    [myHackathons]
+  );
 
   const formatDate = (iso: string | null | undefined) => {
     if (!iso) return t.hackathonsSection.notSpecified;
@@ -137,24 +104,21 @@ export default function PublicLandingPage() {
               <span className="text-base font-semibold tracking-tight">
                 Hakaton
               </span>
-              <span className="hidden sm:inline-block text-xs text-muted-foreground border-l pl-3">
-                {t.brandSub}
-              </span>
             </Link>
 
             <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
-              <a
-                href="#about"
+              <Link
+                href="/about"
                 className="hover:text-foreground transition-colors"
               >
                 {t.nav.about}
-              </a>
-              <a
-                href="#hackathons"
-                className="hover:text-foreground transition-colors"
+              </Link>
+              <Link
+                href="/hackathons"
+                className="hover:text-foreground transition-colors font-medium text-foreground"
               >
                 {t.nav.hackathons}
-              </a>
+              </Link>
               <a
                 href="#steps"
                 className="hover:text-foreground transition-colors"
@@ -165,17 +129,6 @@ export default function PublicLandingPage() {
           </div>
 
           <div className="flex items-center gap-2.5">
-            {/* Live People Pill in Header */}
-            <div className="hidden sm:flex items-center gap-2 rounded-lg border bg-background px-3 py-1.5 text-xs text-muted-foreground">
-              <span className="h-2 w-2 rounded-full bg-foreground animate-pulse" />
-              <span>
-                {t.stats.totalPeopleTitle}:{" "}
-                <strong className="text-foreground font-semibold">
-                  {overview?.totalPeople ?? 0}
-                </strong>
-              </span>
-            </div>
-
             {/* Language Switcher: RU (default) / UZ */}
             <div className="flex items-center rounded-lg border bg-background p-0.5">
               <button
@@ -217,12 +170,14 @@ export default function PublicLandingPage() {
             {/* User Auth Buttons */}
             {isAuthenticated && user ? (
               <div className="flex items-center gap-2 pl-1">
-                <div className="hidden sm:flex items-center gap-2 rounded-lg border bg-secondary/60 px-3 py-1.5 text-sm">
-                  <User className="h-4 w-4" />
-                  <span className="font-medium max-w-32 truncate">
-                    {user.full_name}
-                  </span>
-                </div>
+                <Link href="/hackathons">
+                  <div className="hidden sm:flex items-center gap-2 rounded-lg border bg-secondary/60 px-3 py-1.5 text-sm hover:bg-secondary">
+                    <User className="h-4 w-4" />
+                    <span className="font-medium max-w-36 truncate">
+                      {user.full_name}
+                    </span>
+                  </div>
+                </Link>
                 <Button
                   variant="outline"
                   size="sm"
@@ -239,14 +194,14 @@ export default function PublicLandingPage() {
                   variant="outline"
                   size="sm"
                   className="h-9 px-3.5 text-sm bg-background"
-                  onClick={() => setAuthModalMode("login")}
+                  onClick={() => setAuthModalStep("login")}
                 >
                   {t.nav.login}
                 </Button>
                 <Button
                   size="sm"
                   className="h-9 px-3.5 text-sm"
-                  onClick={() => setAuthModalMode("register")}
+                  onClick={() => setAuthModalStep("register")}
                 >
                   {t.nav.register}
                 </Button>
@@ -276,18 +231,25 @@ export default function PublicLandingPage() {
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               {isAuthenticated && user ? (
-                <div className="inline-flex items-center gap-2.5 rounded-xl border bg-secondary/60 px-4 py-2.5 text-sm">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>
-                    {t.hero.loggedWelcome}{" "}
-                    <strong>{user.full_name}</strong> (@{user.username})
-                  </span>
-                </div>
+                <>
+                  <Link href="/hackathons">
+                    <Button className="h-10 px-5 text-sm font-medium">
+                      {t.hero.ctaExplore}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <div className="inline-flex items-center gap-2.5 rounded-xl border bg-secondary/60 px-4 py-2 text-sm">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span>
+                      {t.hero.loggedWelcome} <strong>{user.full_name}</strong>
+                    </span>
+                  </div>
+                </>
               ) : (
                 <>
                   <Button
                     className="h-10 px-5 text-sm font-medium"
-                    onClick={() => setAuthModalMode("register")}
+                    onClick={() => setAuthModalStep("register")}
                   >
                     {t.hero.ctaRegister}
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -295,21 +257,65 @@ export default function PublicLandingPage() {
                   <Button
                     variant="outline"
                     className="h-10 px-5 text-sm font-medium bg-background"
-                    onClick={() => setAuthModalMode("login")}
+                    onClick={() => setAuthModalStep("login")}
                   >
                     {t.hero.ctaLogin}
                   </Button>
                 </>
               )}
-              <a
-                href="#hackathons"
+              <Link
+                href="/hackathons"
                 className="inline-flex items-center h-10 px-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                {t.hero.ctaExplore} →
-              </a>
+                {t.hackathonsSection.viewAllBtn} →
+              </Link>
             </div>
           </div>
         </section>
+
+        {/* IF USER HAS REGISTERED HACKATHONS, SHOW THEIR UPCOMING START DATES BANNER */}
+        {isAuthenticated && myHackathons.length > 0 && (
+          <section className="rounded-2xl border-2 border-foreground bg-card/95 p-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                <h2 className="text-lg sm:text-xl font-bold">
+                  {t.hackathonsPage.tabMy} ({myHackathons.length})
+                </h2>
+              </div>
+              <Link href="/hackathons">
+                <Button variant="outline" size="sm" className="h-9 text-sm">
+                  {t.hackathonsSection.viewAllBtn}
+                  <ArrowRight className="ml-1.5 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+
+            <div className="grid gap-3.5 sm:grid-cols-2">
+              {myHackathons.map((mh) => (
+                <Link
+                  key={mh.participant_id}
+                  href={`/hackathons/${mh.id}`}
+                  className="block rounded-xl border bg-secondary/35 p-4 space-y-2 hover:border-foreground transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-semibold text-base">{mh.title}</span>
+                    <Badge variant="default" className="text-xs">
+                      <CheckCircle2 className="mr-1 h-3 w-3" />
+                      {t.hackathonsPage.myStatusApproved}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {t.hackathonsSection.whenStartsBoxTitle}{" "}
+                    <strong className="text-foreground">
+                      {formatDate(mh.start_at)}
+                    </strong>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* 2. LIVE KPI STATS CARDS (Exact Dashboard Style) */}
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -379,46 +385,65 @@ export default function PublicLandingPage() {
           </div>
         </section>
 
-        {/* 3. ABOUT THE HACKATHON (1 Founder + All Students/Pupils) */}
+        {/* 3. CONCISE "О ПРОЕКТЕ / LOYIHA HAQIDA" WITH LINK TO /about */}
         <section id="about" className="space-y-5">
-          <div>
-            <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-              {t.aboutSection.tag}
-            </p>
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mt-1">
-              {t.aboutSection.title}
-            </h2>
-            <p className="text-sm sm:text-base text-muted-foreground mt-1">
-              {t.aboutSection.subtitle}
-            </p>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            {t.aboutSection.cards.map((card, idx) => (
-              <div
-                key={idx}
-                className="rounded-xl border bg-card/95 p-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-xs space-y-2.5"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-sm text-muted-foreground">
-                    0{idx + 1}
-                  </span>
-                  <UserCheck className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <h3 className="text-base sm:text-lg font-semibold tracking-tight">
-                  {card.title}
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {card.desc}
+          <div className="rounded-2xl border bg-card/95 p-6 sm:p-8 shadow-[0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-xs space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
+                  {t.aboutSection.tag}
                 </p>
+                <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mt-1">
+                  {t.aboutSection.title}
+                </h2>
               </div>
-            ))}
+
+              <Badge
+                variant="secondary"
+                className="w-fit text-xs sm:text-sm px-3 py-1 font-medium"
+              >
+                <UserCheck className="mr-1.5 h-3.5 w-3.5" />
+                {t.aboutSection.authorBadge}
+              </Badge>
+            </div>
+
+            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed border-l-2 border-foreground pl-4">
+              {t.aboutSection.shortText}
+            </p>
+
+            <div className="grid gap-3.5 sm:grid-cols-3">
+              {t.aboutSection.highlights.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-xl border bg-secondary/20 p-4 space-y-1.5"
+                >
+                  <h3 className="text-sm sm:text-base font-semibold">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-1">
+              <Link href="/about">
+                <Button
+                  variant="outline"
+                  className="h-10 px-5 text-sm font-medium bg-background"
+                >
+                  {t.aboutSection.readMoreBtn}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </section>
 
-        {/* 4. ACTIVE & UPCOMING HACKATHONS */}
+        {/* 4. ACTIVE & UPCOMING HACKATHONS PREVIEW */}
         <section id="hackathons" className="space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
             <div>
               <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
                 {t.hackathonsSection.tag}
@@ -430,6 +455,13 @@ export default function PublicLandingPage() {
                 {t.hackathonsSection.subtitle}
               </p>
             </div>
+
+            <Link href="/hackathons">
+              <Button variant="outline" className="h-10 px-4 text-sm bg-background">
+                {t.hackathonsSection.viewAllBtn}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
 
           {overviewQuery.isLoading ? (
@@ -445,118 +477,132 @@ export default function PublicLandingPage() {
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              {hackathons.map((h) => (
-                <div
-                  key={h.id}
-                  className="flex flex-col justify-between rounded-xl border bg-card/95 p-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-xs space-y-5"
-                >
-                  <div className="space-y-3.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2.5 flex-wrap">
-                        <Badge
-                          variant={
-                            h.status === "active"
-                              ? "default"
-                              : h.status === "paused"
-                              ? "destructive"
-                              : "secondary"
-                          }
-                          className="text-xs font-normal px-2.5 py-0.5"
-                        >
-                          {t.hackathonsSection.status[h.status] || h.status}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {h.is_registration_open
-                            ? t.hackathonsSection.regOpen
-                            : t.hackathonsSection.regClosed}
-                        </span>
+              {hackathons.map((h) => {
+                const isJoined = registeredIds.has(h.id);
+                return (
+                  <div
+                    key={h.id}
+                    className="flex flex-col justify-between rounded-xl border bg-card/95 p-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-xs space-y-5"
+                  >
+                    <div className="space-y-3.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5 flex-wrap">
+                          <Badge
+                            variant={
+                              h.status === "active"
+                                ? "default"
+                                : h.status === "paused"
+                                ? "destructive"
+                                : "secondary"
+                            }
+                            className="text-xs font-normal px-2.5 py-0.5"
+                          >
+                            {t.hackathonsSection.status[h.status] || h.status}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {h.is_registration_open
+                              ? t.hackathonsSection.regOpen
+                              : t.hackathonsSection.regClosed}
+                          </span>
+                        </div>
+                        {h.prize_pool && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs font-mono px-2.5 py-0.5"
+                          >
+                            {h.prize_pool}
+                          </Badge>
+                        )}
                       </div>
-                      {h.prize_pool && (
-                        <Badge
-                          variant="outline"
-                          className="text-xs font-mono px-2.5 py-0.5"
-                        >
-                          {h.prize_pool}
-                        </Badge>
-                      )}
-                    </div>
 
-                    <div>
-                      <h3 className="text-lg sm:text-xl font-semibold tracking-tight">
-                        {h.title}
-                      </h3>
-                      {h.description && (
-                        <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-                          {h.description}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 rounded-lg border bg-secondary/30 p-3.5 text-sm">
-                      <div className="space-y-1">
-                        <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-                          <Calendar className="h-3.5 w-3.5" />
-                          {t.hackathonsSection.startLabel}
-                        </span>
-                        <p className="font-medium">{formatDate(h.start_at)}</p>
+                      <div>
+                        <h3 className="text-lg sm:text-xl font-semibold tracking-tight">
+                          {h.title}
+                        </h3>
+                        {h.description && (
+                          <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
+                            {h.description}
+                          </p>
+                        )}
                       </div>
-                      <div className="space-y-1">
-                        <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-                          <Calendar className="h-3.5 w-3.5" />
-                          {t.hackathonsSection.endLabel}
-                        </span>
-                        <p className="font-medium">{formatDate(h.end_at)}</p>
+
+                      <div className="grid grid-cols-2 gap-3 rounded-lg border bg-secondary/30 p-3.5 text-sm">
+                        <div className="space-y-1">
+                          <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5" />
+                            {t.hackathonsSection.startLabel}
+                          </span>
+                          <p className="font-semibold">
+                            {formatDate(h.start_at)}
+                          </p>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5" />
+                            {t.hackathonsSection.endLabel}
+                          </span>
+                          <p className="font-medium">{formatDate(h.end_at)}</p>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1.5">
-                        <Users className="h-4 w-4" />
-                        {t.hackathonsSection.participantsLabel}:{" "}
-                        <strong className="text-foreground">
-                          {h.participants_count || 0}
-                          {h.max_participants ? ` / ${h.max_participants}` : ""}
-                        </strong>
-                      </span>
-
-                      <span className="flex items-center gap-1.5">
-                        <ListChecks className="h-4 w-4" />
-                        {t.hackathonsSection.tasksLabel}:{" "}
-                        <strong className="text-foreground">
-                          {h.tasks_count || 0}
-                        </strong>
-                      </span>
-
-                      {h.location && (
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1.5">
-                          <MapPin className="h-4 w-4" />
-                          {h.location}
+                          <Users className="h-4 w-4" />
+                          {t.hackathonsSection.participantsLabel}:{" "}
+                          <strong className="text-foreground">
+                            {h.participants_count || 0}
+                            {h.max_participants
+                              ? ` / ${h.max_participants}`
+                              : ""}
+                          </strong>
                         </span>
+
+                        <span className="flex items-center gap-1.5">
+                          <ListChecks className="h-4 w-4" />
+                          {t.hackathonsSection.tasksLabel}:{" "}
+                          <strong className="text-foreground">
+                            {h.tasks_count || 0}
+                          </strong>
+                        </span>
+
+                        {h.location && (
+                          <span className="flex items-center gap-1.5">
+                            <MapPin className="h-4 w-4" />
+                            {h.location}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t">
+                      {isJoined ? (
+                        <Button
+                          variant="default"
+                          className="w-full h-10 text-sm"
+                          onClick={() => router.push(`/hackathons/${h.id}`)}
+                        >
+                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                          {t.hackathonsSection.alreadyJoinedBadge} →
+                        </Button>
+                      ) : (
+                        <Button
+                          className="w-full h-10 text-sm"
+                          onClick={() =>
+                            isAuthenticated
+                              ? router.push("/hackathons")
+                              : setAuthModalStep("register")
+                          }
+                        >
+                          {isAuthenticated
+                            ? t.hackathonsSection.joinNowBtn
+                            : t.hackathonsSection.participateBtn}
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
                       )}
                     </div>
                   </div>
-
-                  <div className="pt-3 border-t">
-                    {isAuthenticated ? (
-                      <Button
-                        variant="outline"
-                        className="w-full h-10 text-sm"
-                      >
-                        <CheckCircle2 className="mr-2 h-4 w-4" />
-                        {t.hackathonsSection.readyToJoinBtn}
-                      </Button>
-                    ) : (
-                      <Button
-                        className="w-full h-10 text-sm"
-                        onClick={() => setAuthModalMode("register")}
-                      >
-                        {t.hackathonsSection.participateBtn}
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
@@ -607,134 +653,40 @@ export default function PublicLandingPage() {
       </footer>
 
       {/* ========================================================= */}
-      {/* STUDENT LOGIN / REGISTER MODAL */}
+      {/* STUDENT LOGIN / REGISTER / GOOGLE AUTH MODAL */}
       {/* ========================================================= */}
       <Dialog
-        open={Boolean(authModalMode)}
-        onOpenChange={(open) => !open && setAuthModalMode(null)}
+        open={Boolean(authModalStep)}
+        onOpenChange={(open) => {
+          if (!open) {
+            if (isAuthenticated && needsProfileCompletion) return;
+            setAuthModalStep(null);
+          }
+        }}
       >
         <DialogContent className="sm:max-w-md">
-          {authModalMode === "login" ? (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-lg">
-                  {t.auth.loginTitle}
-                </DialogTitle>
-                <DialogDescription className="text-sm">
-                  {t.auth.loginDesc}
-                </DialogDescription>
-              </DialogHeader>
+          <DialogHeader>
+            <DialogTitle className="text-lg">
+              {authModalStep === "login"
+                ? t.auth.loginTitle
+                : authModalStep === "complete-profile"
+                ? t.auth.completeTitle
+                : t.auth.registerTitle}
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              {authModalStep === "login"
+                ? t.auth.loginDesc
+                : authModalStep === "complete-profile"
+                ? t.auth.completeDesc
+                : t.auth.registerDesc}
+            </DialogDescription>
+          </DialogHeader>
 
-              <form
-                onSubmit={loginForm.handleSubmit(handleLoginSubmit)}
-                className="space-y-4 py-2"
-              >
-                <div className="space-y-1.5">
-                  <Label className="text-sm">{t.auth.usernameLabel}</Label>
-                  <Input
-                    placeholder={t.auth.usernamePlaceholder}
-                    className="h-10 text-sm"
-                    {...loginForm.register("username")}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-sm">{t.auth.passwordLabel}</Label>
-                  <Input
-                    type="password"
-                    placeholder="••••••••"
-                    className="h-10 text-sm"
-                    {...loginForm.register("password")}
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full h-10 text-sm"
-                  disabled={loginMutation.isPending}
-                >
-                  {loginMutation.isPending
-                    ? t.auth.submitting
-                    : t.auth.loginBtn}
-                </Button>
-
-                <div className="text-center text-sm text-muted-foreground pt-3 border-t">
-                  {t.auth.noAccount}{" "}
-                  <button
-                    type="button"
-                    onClick={() => setAuthModalMode("register")}
-                    className="font-medium text-foreground underline underline-offset-4"
-                  >
-                    {t.auth.switchToRegister}
-                  </button>
-                </div>
-              </form>
-            </>
-          ) : (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-lg">
-                  {t.auth.registerTitle}
-                </DialogTitle>
-                <DialogDescription className="text-sm">
-                  {t.auth.registerDesc}
-                </DialogDescription>
-              </DialogHeader>
-
-              <form
-                onSubmit={registerForm.handleSubmit(handleRegisterSubmit)}
-                className="space-y-4 py-2"
-              >
-                <div className="space-y-1.5">
-                  <Label className="text-sm">{t.auth.fullNameLabel}</Label>
-                  <Input
-                    placeholder={t.auth.fullNamePlaceholder}
-                    className="h-10 text-sm"
-                    {...registerForm.register("full_name")}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-sm">{t.auth.usernameLabel}</Label>
-                  <Input
-                    placeholder={t.auth.usernamePlaceholder}
-                    className="h-10 text-sm"
-                    {...registerForm.register("username")}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-sm">{t.auth.passwordLabel}</Label>
-                  <Input
-                    type="password"
-                    placeholder={t.auth.passwordPlaceholder}
-                    className="h-10 text-sm"
-                    {...registerForm.register("password")}
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full h-10 text-sm"
-                  disabled={registerMutation.isPending}
-                >
-                  {registerMutation.isPending
-                    ? t.auth.submitting
-                    : t.auth.registerBtn}
-                </Button>
-
-                <div className="text-center text-sm text-muted-foreground pt-3 border-t">
-                  {t.auth.hasAccount}{" "}
-                  <button
-                    type="button"
-                    onClick={() => setAuthModalMode("login")}
-                    className="font-medium text-foreground underline underline-offset-4"
-                  >
-                    {t.auth.switchToLogin}
-                  </button>
-                </div>
-              </form>
-            </>
+          {authModalStep && (
+            <StudentAuthFlow
+              initialStep={authModalStep}
+              onSuccess={() => setAuthModalStep(null)}
+            />
           )}
         </DialogContent>
       </Dialog>

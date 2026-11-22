@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
+import { adminPath } from "@/lib/constants";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -18,6 +20,9 @@ import {
   Calendar,
   MapPin,
   Settings2,
+  Eye,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -149,8 +154,8 @@ export default function HackathonsManagementPage() {
     number | null
   >(null);
   const [activeTab, setActiveTab] = React.useState<
-    "participants" | "tasks" | "settings"
-  >("participants");
+    "progress" | "participants" | "tasks" | "settings"
+  >("progress");
   const [participantSearch, setParticipantSearch] = React.useState("");
   const [deleteTarget, setDeleteTarget] = React.useState<Hackathon | null>(
     null
@@ -372,6 +377,16 @@ export default function HackathonsManagementPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Link href={adminPath("dashboard/submissions")}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 text-sm bg-background"
+            >
+              <ListChecks className="mr-1.5 h-3.5 w-3.5" />
+              Topshirilgan vazifalarni ko&apos;rish
+            </Button>
+          </Link>
           <Button
             variant="outline"
             size="sm"
@@ -607,6 +622,20 @@ export default function HackathonsManagementPage() {
                               To&apos;xtatish
                             </>
                           )}
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs"
+                          onClick={() => {
+                            setManageHackathonId(h.id);
+                            setActiveTab("progress");
+                          }}
+                          title="Hakatonni ko'rish (Kim bajardi / Kim bajarmadi)"
+                        >
+                          <Eye className="mr-1 h-3.5 w-3.5" />
+                          Ko&apos;rish
                         </Button>
 
                         <Button
@@ -1098,7 +1127,18 @@ export default function HackathonsManagementPage() {
           </DialogHeader>
 
           {/* Custom Minimal Tab Switcher */}
-          <div className="flex items-center gap-1 border-b pb-2">
+          <div className="flex flex-wrap items-center gap-1 border-b pb-2">
+            <Button
+              type="button"
+              variant={activeTab === "progress" ? "default" : "ghost"}
+              size="sm"
+              className="h-9 text-sm"
+              onClick={() => setActiveTab("progress")}
+            >
+              <Eye className="mr-1.5 h-3.5 w-3.5" />
+              Kim bajardi / Bajarmadi
+            </Button>
+
             <Button
               type="button"
               variant={activeTab === "participants" ? "default" : "ghost"}
@@ -1139,6 +1179,155 @@ export default function HackathonsManagementPage() {
               <Skeleton className="h-10 w-full" />
               <Skeleton className="h-32 w-full" />
             </div>
+          ) : activeTab === "progress" ? (
+            /* TAB 0: KIM BAJARDI / KIM BAJARMADI (ISM FAMILIYALAR) */
+            (() => {
+              const allParticipants = managed.participants || [];
+              const allSubmissions = managed.submissions || [];
+              const totalTasksCount = (managed.tasks || []).length;
+
+              const completedList = allParticipants.filter((p) =>
+                allSubmissions.some(
+                  (s) =>
+                    (p.user_id && s.user_id === p.user_id) ||
+                    (p.phone && s.user_phone === p.phone) ||
+                    (s.user_full_name &&
+                      s.user_full_name.toLowerCase() ===
+                        p.full_name.toLowerCase())
+                )
+              );
+
+              const notCompletedList = allParticipants.filter(
+                (p) => !completedList.some((c) => c.id === p.id)
+              );
+
+              return (
+                <div className="space-y-5 py-2">
+                  {/* Summary Counts */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="rounded-xl border bg-secondary/20 p-4">
+                      <p className="text-xs text-muted-foreground">
+                        Jami ro&apos;yxatdan o&apos;tganlar
+                      </p>
+                      <p className="mt-1 text-2xl font-bold">
+                        {allParticipants.length} kishi
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border bg-secondary/20 p-4">
+                      <p className="text-xs text-muted-foreground">
+                        Zadachalarni bajarganlar
+                      </p>
+                      <p className="mt-1 text-2xl font-bold">
+                        {completedList.length} kishi
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border bg-secondary/20 p-4">
+                      <p className="text-xs text-muted-foreground">
+                        Hali bajarmaganlar
+                      </p>
+                      <p className="mt-1 text-2xl font-bold">
+                        {notCompletedList.length} kishi
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Two Columns: Completed vs Not Completed Names */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* 1. BAJARGANLAR (ISM FAMILIYALAR) */}
+                    <div className="rounded-xl border p-4 space-y-3">
+                      <div className="flex items-center justify-between border-b pb-2.5">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-foreground" />
+                          <h3 className="text-sm font-bold">
+                            Bajarganlar ({completedList.length})
+                          </h3>
+                        </div>
+                        <Badge variant="default" className="text-xs">
+                          Topshirgan
+                        </Badge>
+                      </div>
+
+                      {completedList.length === 0 ? (
+                        <p className="text-xs text-muted-foreground py-4 text-center">
+                          Hozircha hech kim vazifa topshirmagan
+                        </p>
+                      ) : (
+                        <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                          {completedList.map((p, idx) => {
+                            const countDone = allSubmissions.filter(
+                              (s) =>
+                                (p.user_id && s.user_id === p.user_id) ||
+                                (p.phone && s.user_phone === p.phone)
+                            ).length;
+                            return (
+                              <div
+                                key={p.id}
+                                className="flex items-center justify-between rounded-lg border bg-secondary/30 px-3 py-2 text-sm"
+                              >
+                                <span className="font-medium">
+                                  {idx + 1}. {p.full_name}
+                                </span>
+                                <Badge variant="outline" className="text-xs">
+                                  {countDone} / {totalTasksCount || 1} vazifa
+                                </Badge>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 2. BAJARMAGANLAR (ISM FAMILIYALAR) */}
+                    <div className="rounded-xl border p-4 space-y-3">
+                      <div className="flex items-center justify-between border-b pb-2.5">
+                        <div className="flex items-center gap-2">
+                          <XCircle className="h-4 w-4 text-muted-foreground" />
+                          <h3 className="text-sm font-bold">
+                            Bajarmaganlar ({notCompletedList.length})
+                          </h3>
+                        </div>
+                        <Badge variant="secondary" className="text-xs">
+                          Topshirmagan
+                        </Badge>
+                      </div>
+
+                      {notCompletedList.length === 0 ? (
+                        <p className="text-xs text-muted-foreground py-4 text-center">
+                          Barcha ishtirokchilar vazifani topshirgan!
+                        </p>
+                      ) : (
+                        <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                          {notCompletedList.map((p, idx) => (
+                            <div
+                              key={p.id}
+                              className="flex items-center justify-between rounded-lg border bg-background px-3 py-2 text-sm"
+                            >
+                              <span className="font-medium">
+                                {idx + 1}. {p.full_name}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                0 / {totalTasksCount || 1} vazifa
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Link to Separate Submissions Page */}
+                  <div className="flex justify-end pt-2 border-t">
+                    <Link href={adminPath("dashboard/submissions")}>
+                      <Button variant="outline" size="sm" className="h-9 text-sm">
+                        Topshirilgan fayllar va vazifalar sahifasiga o&apos;tish →
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              );
+            })()
           ) : activeTab === "participants" ? (
             /* TAB 1: REGISTERED PARTICIPANTS */
             <div className="space-y-4 py-2">

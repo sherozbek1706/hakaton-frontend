@@ -4,47 +4,17 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Sun, Moon, ArrowLeft, ArrowRight } from "lucide-react";
-import { toast } from "sonner";
+import { Sun, Moon, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAppStore } from "@/store/use-app-store";
-import { useUserAuthStore } from "@/store/use-user-auth-store";
 import { translations } from "@/lib/i18n";
-import { useUserLoginMutation } from "@/hooks/use-public-overview";
-
-const loginSchema = z.object({
-  username: z.string().min(2),
-  password: z.string().min(4),
-});
+import { StudentAuthFlow } from "@/components/student-auth-flow";
 
 export default function StudentLoginPage() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { lang, setLang } = useAppStore();
-  const { setUserAuth } = useUserAuthStore();
   const t = translations[lang];
-  const loginMutation = useUserLoginMutation();
-
-  const form = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { username: "", password: "" },
-  });
-
-  const onSubmit = async (values: z.infer<typeof loginSchema>) => {
-    try {
-      const res = await loginMutation.mutateAsync(values);
-      setUserAuth(res.user, res.token);
-      toast.success(t.auth.loginSuccess);
-      router.push("/");
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Error");
-    }
-  };
 
   return (
     <div className="relative min-h-screen flex flex-col justify-between bg-background text-foreground px-4 py-8 bg-minimal-grid">
@@ -106,45 +76,10 @@ export default function StudentLoginPage() {
         </div>
 
         <div className="rounded-2xl border bg-card/95 p-7 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs">
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label className="text-sm">{t.auth.usernameLabel}</Label>
-              <Input
-                placeholder={t.auth.usernamePlaceholder}
-                className="h-10 text-sm bg-background"
-                {...form.register("username")}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-sm">{t.auth.passwordLabel}</Label>
-              <Input
-                type="password"
-                placeholder="••••••••"
-                className="h-10 text-sm bg-background"
-                {...form.register("password")}
-              />
-            </div>
-
-            <Button
-              type="submit"
-              disabled={loginMutation.isPending}
-              className="w-full h-10 text-sm"
-            >
-              {loginMutation.isPending ? t.auth.submitting : t.auth.loginBtn}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </form>
-
-          <div className="mt-5 pt-4 border-t text-center text-sm text-muted-foreground">
-            {t.auth.noAccount}{" "}
-            <Link
-              href="/register"
-              className="font-medium text-foreground underline underline-offset-4"
-            >
-              {t.auth.switchToRegister}
-            </Link>
-          </div>
+          <StudentAuthFlow
+            initialStep="login"
+            onSuccess={() => router.push("/")}
+          />
         </div>
       </div>
 

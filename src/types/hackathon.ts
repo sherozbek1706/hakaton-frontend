@@ -30,6 +30,7 @@ export interface HackathonTask {
 export interface HackathonParticipant {
   id: number;
   hackathon_id: number;
+  user_id?: number | null;
   full_name: string;
   username: string | null;
   phone: string | null;
@@ -38,6 +39,23 @@ export interface HackathonParticipant {
   direction: string | null;
   status: ParticipantStatus;
   registered_at: string;
+}
+
+export interface HackathonSubmissionItem {
+  id: number;
+  hackathon_id: number;
+  task_id: number;
+  user_id: number;
+  project_name: string | null;
+  project_description: string | null;
+  project_link: string | null;
+  project_image: string | null;
+  project_zip: string | null;
+  edit_count: number;
+  submitted_at: string;
+  user_full_name?: string;
+  user_phone?: string | null;
+  task_title?: string;
 }
 
 export interface Hackathon {
@@ -65,6 +83,7 @@ export interface Hackathon {
   tasks_count?: number;
   tasks?: HackathonTask[];
   participants?: HackathonParticipant[];
+  submissions?: HackathonSubmissionItem[];
 }
 
 export interface HackathonsListResponse {

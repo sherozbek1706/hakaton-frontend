@@ -3,8 +3,14 @@ import { persist } from "zustand/middleware";
 
 export interface PublicUser {
   id: number;
+  first_name: string;
+  last_name: string;
   full_name: string;
-  username: string;
+  phone: string | null;
+  email?: string | null;
+  google_id?: string | null;
+  auth_provider?: "local" | "google";
+  is_profile_completed?: boolean;
   role: string;
   avatar?: string | null;
   created_at?: string;
@@ -14,7 +20,12 @@ interface UserAuthState {
   user: PublicUser | null;
   token: string | null;
   isAuthenticated: boolean;
-  setUserAuth: (user: PublicUser, token: string) => void;
+  needsProfileCompletion: boolean;
+  setUserAuth: (
+    user: PublicUser,
+    token: string,
+    needsProfileCompletion?: boolean
+  ) => void;
   logoutUser: () => void;
 }
 
@@ -24,12 +35,24 @@ export const useUserAuthStore = create<UserAuthState>()(
       user: null,
       token: null,
       isAuthenticated: false,
-      setUserAuth: (user, token) => set({ user, token, isAuthenticated: true }),
+      needsProfileCompletion: false,
+      setUserAuth: (user, token, needsProfileCompletion = false) =>
+        set({
+          user,
+          token,
+          isAuthenticated: true,
+          needsProfileCompletion,
+        }),
       logoutUser: () =>
-        set({ user: null, token: null, isAuthenticated: false }),
+        set({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          needsProfileCompletion: false,
+        }),
     }),
     {
-      name: "student-user-auth",
+      name: "student-user-auth-v2",
     }
   )
 );

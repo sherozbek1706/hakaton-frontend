@@ -64,8 +64,8 @@ export default function SecretAdminLoginPage() {
 
       {/* Top minimal bar */}
       <div className="relative z-10 mx-auto flex w-full max-w-5xl items-center justify-between">
-        <div className="flex items-center gap-2.5 text-base font-semibold tracking-tight">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-foreground text-background text-sm font-bold">
+        <div className="flex items-center gap-2.5 text-sm font-medium tracking-tight">
+          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-foreground text-background text-xs font-bold">
             A
           </span>
           <span>Admin Panel</span>
@@ -73,8 +73,8 @@ export default function SecretAdminLoginPage() {
 
         <Button
           variant="outline"
-          size="icon"
-          className="h-9 w-9 bg-background/80 backdrop-blur-xs"
+          size="icon-sm"
+          className="bg-background/80 backdrop-blur-xs"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           title="Mavzuni almashtirish"
         >
@@ -84,30 +84,30 @@ export default function SecretAdminLoginPage() {
       </div>
 
       {/* Center Minimal Login Form */}
-      <div className="relative z-10 mx-auto w-full max-w-md space-y-6">
+      <div className="relative z-10 mx-auto w-full max-w-sm space-y-6">
         <div className="space-y-1.5 text-center">
-          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl border bg-card shadow-2xs">
-            <Lock className="h-5 w-5 text-foreground" />
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl border bg-card shadow-2xs">
+            <Lock className="h-4 w-4 text-foreground" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-xl font-semibold tracking-tight">
             Tizimga kirish
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Davom etish uchun administrator ma&apos;lumotlarini kiriting
           </p>
         </div>
 
-        <div className="relative rounded-2xl border bg-card/95 p-7 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs">
+        <div className="relative rounded-2xl border bg-card/95 p-6 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.06)] backdrop-blur-xs">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="username" className="text-sm font-medium">
+              <Label htmlFor="username" className="text-xs font-medium">
                 Username
               </Label>
               <Input
                 id="username"
                 placeholder="Username kiriting"
                 autoComplete="username"
-                className="h-10 text-sm bg-background"
+                className="h-9 bg-background"
                 {...form.register("username")}
               />
               {form.formState.errors.username && (
@@ -118,7 +118,7 @@ export default function SecretAdminLoginPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-sm font-medium">
+              <Label htmlFor="password" className="text-xs font-medium">
                 Parol
               </Label>
               <div className="relative">
@@ -127,13 +127,13 @@ export default function SecretAdminLoginPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   autoComplete="current-password"
-                  className="h-10 text-sm pr-10 bg-background"
+                  className="h-9 pr-9 bg-background"
                   {...form.register("password")}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -152,14 +152,14 @@ export default function SecretAdminLoginPage() {
             <Button
               type="submit"
               disabled={loginMutation.isPending}
-              className="w-full h-10 text-sm font-medium mt-1"
+              className="w-full h-9 text-xs font-medium mt-1"
             >
               {loginMutation.isPending ? (
                 "Tekshirilmoqda..."
               ) : (
                 <>
                   Kirish
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                 </>
               )}
             </Button>
@@ -168,7 +168,7 @@ export default function SecretAdminLoginPage() {
       </div>
 
       {/* Footer */}
-      <div className="relative z-10 text-center text-xs text-muted-foreground">
+      <div className="relative z-10 text-center text-[11px] text-muted-foreground">
         Maxfiy boshqaruv tizimi
       </div>
     </div>
