@@ -19,6 +19,8 @@ import {
   User,
   Sparkles,
   ArrowRight,
+  Lock,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -47,6 +49,7 @@ import {
   type AuthStep,
 } from "@/components/student-auth-flow";
 import type { Hackathon } from "@/types/hackathon";
+import { getHackathonRegistrationState } from "@/lib/hackathon-registration";
 
 export default function PublicHackathonsPage() {
   const { theme, setTheme } = useTheme();
@@ -67,6 +70,12 @@ export default function PublicHackathonsPage() {
   const [joinTarget, setJoinTarget] = React.useState<Hackathon | null>(null);
   const [direction, setDirection] = React.useState("Frontend / Backend");
   const [teamName, setTeamName] = React.useState("");
+  const [now, setNow] = React.useState(Date.now());
+
+  React.useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const hackathonsQuery = usePublicHackathonsQuery({
     search,
@@ -125,6 +134,16 @@ export default function PublicHackathonsPage() {
   };
 
   const handleClickJoin = (h: Hackathon) => {
+    const reg = getHackathonRegistrationState(h, lang, now);
+    if (!reg.canRegister) {
+      toast.error(
+        reg.detailMessage ||
+          (lang === "ru"
+            ? "Регистрация в данный хакатон закрыта"
+            : "Ushbu hakatonga ro'yxatdan o'tish hozircha yopiq")
+      );
+      return;
+    }
     if (!isAuthenticated || !token) {
       setAuthModalStep("register");
       return;
@@ -138,6 +157,17 @@ export default function PublicHackathonsPage() {
 
   const handleConfirmJoin = async () => {
     if (!joinTarget || !token) return;
+    const reg = getHackathonRegistrationState(joinTarget, lang, now);
+    if (!reg.canRegister) {
+      toast.error(
+        reg.detailMessage ||
+          (lang === "ru"
+            ? "Регистрация закрыта"
+            : "Ro'yxatdan o'tish yopiq")
+      );
+      setJoinTarget(null);
+      return;
+    }
     const joinedId = joinTarget.id;
     try {
       await joinMutation.mutateAsync({
@@ -459,6 +489,7 @@ export default function PublicHackathonsPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 {allHackathons.map((h) => {
                   const isJoined = registeredIds.has(h.id);
+                  const regState = getHackathonRegistrationState(h, lang, now);
                   return (
                     <div
                       key={h.id}
@@ -479,11 +510,18 @@ export default function PublicHackathonsPage() {
                             >
                               {hs.status[h.status] || h.status}
                             </Badge>
-                            <span className="text-xs text-muted-foreground">
-                              {h.is_registration_open
-                                ? hs.regOpen
-                                : hs.regClosed}
-                            </span>
+                            <Badge
+                              variant={regState.badgeVariant}
+                              className="text-xs font-normal px-2.5 py-0.5 flex items-center gap-1"
+                            >
+                              {regState.statusKey === "not_started" && (
+                                <Clock className="h-3 w-3 shrink-0" />
+                              )}
+                              {regState.statusKey === "closed" && (
+                                <Lock className="h-3 w-3 shrink-0" />
+                              )}
+                              <span>{regState.badgeText}</span>
+                            </Badge>
                           </div>
                           {h.prize_pool && (
                             <Badge
@@ -505,6 +543,43 @@ export default function PublicHackathonsPage() {
                             </p>
                           )}
                         </div>
+
+                        {/* Detailed Registration status callout if not open */}
+                        {!regState.canRegister && (
+                          <div
+                            className={`rounded-xl border border-dashed p-3 text-xs space-y-1 ${
+                              regState.statusKey === "not_started"
+                                ? "border-amber-500/40 bg-amber-500/10 text-amber-950 dark:text-amber-100"
+                                : regState.statusKey === "paused"
+                                ? "border-destructive/40 bg-destructive/10 text-destructive"
+                                : "border-border bg-secondary/35 text-muted-foreground"
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5 font-semibold">
+                              {regState.statusKey === "not_started" ? (
+                                <Clock className="h-3.5 w-3.5 shrink-0" />
+                              ) : (
+                                <Lock className="h-3.5 w-3.5 shrink-0" />
+                              )}
+                              <span>
+                                {regState.statusKey === "not_started"
+                                  ? lang === "ru"
+                                    ? "Регистрация еще не открыта:"
+                                    : "Ro'yxatdan o'tish hali ochilmagan:"
+                                  : regState.statusKey === "closed"
+                                  ? lang === "ru"
+                                    ? "Регистрация закрыта:"
+                                    : "Hozircha ro'yxatdan o'tish yopiq:"
+                                  : lang === "ru"
+                                  ? "Прием заявок недоступен:"
+                                  : "Qabul mavjud emas:"}
+                              </span>
+                            </div>
+                            <p className="leading-relaxed opacity-90">
+                              {regState.detailMessage}
+                            </p>
+                          </div>
+                        )}
 
                         {/* Start & End Time Box */}
                         <div
@@ -587,18 +662,23 @@ export default function PublicHackathonsPage() {
                           </Link>
                         ) : (
                           <Button
-                            className="w-full h-10 text-sm font-medium"
-                            disabled={
-                              !h.is_registration_open ||
-                              h.status === "paused" ||
-                              h.status === "finished"
-                            }
+                            className={`w-full h-10 text-sm font-medium ${
+                              !regState.canRegister ? "cursor-not-allowed opacity-75" : ""
+                            }`}
+                            disabled={!regState.canRegister}
                             onClick={() => handleClickJoin(h)}
                           >
-                            {isAuthenticated
-                              ? hs.joinNowBtn
-                              : hs.participateBtn}
-                            <ArrowRight className="ml-2 h-4 w-4" />
+                            {!regState.canRegister && (
+                              <Lock className="mr-2 h-4 w-4 shrink-0" />
+                            )}
+                            {regState.canRegister
+                              ? isAuthenticated
+                                ? hs.joinNowBtn
+                                : hs.participateBtn
+                              : regState.buttonText}
+                            {regState.canRegister && (
+                              <ArrowRight className="ml-2 h-4 w-4 shrink-0" />
+                            )}
                           </Button>
                         )}
                       </div>

@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   Sparkles,
   User,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,7 @@ import {
   usePublicOverviewQuery,
   useMyHackathonsQuery,
 } from "@/hooks/use-public-overview";
+import { getHackathonRegistrationState } from "@/lib/hackathon-registration";
 import {
   StudentAuthFlow,
   type AuthStep,
@@ -59,6 +61,12 @@ export default function PublicLandingPage() {
   const [authModalStep, setAuthModalStep] = React.useState<AuthStep | null>(
     null
   );
+  const [now, setNow] = React.useState(Date.now());
+
+  React.useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   React.useEffect(() => {
     if (isAuthenticated && needsProfileCompletion) {
@@ -479,6 +487,7 @@ export default function PublicLandingPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               {hackathons.map((h) => {
                 const isJoined = registeredIds.has(h.id);
+                const regState = getHackathonRegistrationState(h, lang, now);
                 return (
                   <div
                     key={h.id}
@@ -499,11 +508,18 @@ export default function PublicLandingPage() {
                           >
                             {t.hackathonsSection.status[h.status] || h.status}
                           </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {h.is_registration_open
-                              ? t.hackathonsSection.regOpen
-                              : t.hackathonsSection.regClosed}
-                          </span>
+                          <Badge
+                            variant={regState.badgeVariant}
+                            className="text-xs font-normal px-2.5 py-0.5 flex items-center gap-1"
+                          >
+                            {regState.statusKey === "not_started" && (
+                              <Clock className="h-3 w-3 shrink-0" />
+                            )}
+                            {regState.statusKey === "closed" && (
+                              <Lock className="h-3 w-3 shrink-0" />
+                            )}
+                            <span>{regState.badgeText}</span>
+                          </Badge>
                         </div>
                         {h.prize_pool && (
                           <Badge
@@ -525,6 +541,43 @@ export default function PublicLandingPage() {
                           </p>
                         )}
                       </div>
+
+                      {/* Callout if registration is not open */}
+                      {!regState.canRegister && (
+                        <div
+                          className={`rounded-xl border border-dashed p-3 text-xs space-y-1 ${
+                            regState.statusKey === "not_started"
+                              ? "border-amber-500/40 bg-amber-500/10 text-amber-950 dark:text-amber-100"
+                              : regState.statusKey === "paused"
+                              ? "border-destructive/40 bg-destructive/10 text-destructive"
+                              : "border-border bg-secondary/35 text-muted-foreground"
+                          }`}
+                        >
+                          <div className="flex items-center gap-1.5 font-semibold">
+                            {regState.statusKey === "not_started" ? (
+                              <Clock className="h-3.5 w-3.5 shrink-0" />
+                            ) : (
+                              <Lock className="h-3.5 w-3.5 shrink-0" />
+                            )}
+                            <span>
+                              {regState.statusKey === "not_started"
+                                ? lang === "ru"
+                                  ? "Регистрация еще не открыта:"
+                                  : "Ro'yxatdan o'tish hali ochilmagan:"
+                                : regState.statusKey === "closed"
+                                ? lang === "ru"
+                                  ? "Регистрация закрыта:"
+                                  : "Hozircha ro'yxatdan o'tish yopiq:"
+                                : lang === "ru"
+                                ? "Прием заявок недоступен:"
+                                : "Qabul mavjud emas:"}
+                            </span>
+                          </div>
+                          <p className="leading-relaxed opacity-90">
+                            {regState.detailMessage}
+                          </p>
+                        </div>
+                      )}
 
                       <div className="grid grid-cols-2 gap-3 rounded-lg border bg-secondary/30 p-3.5 text-sm">
                         <div className="space-y-1">
@@ -586,17 +639,30 @@ export default function PublicLandingPage() {
                         </Button>
                       ) : (
                         <Button
-                          className="w-full h-10 text-sm"
-                          onClick={() =>
-                            isAuthenticated
-                              ? router.push("/hackathons")
-                              : setAuthModalStep("register")
-                          }
+                          className={`w-full h-10 text-sm ${
+                            !regState.canRegister ? "cursor-not-allowed opacity-75" : ""
+                          }`}
+                          disabled={!regState.canRegister}
+                          onClick={() => {
+                            if (!regState.canRegister) return;
+                            if (isAuthenticated) {
+                              router.push("/hackathons");
+                            } else {
+                              setAuthModalStep("register");
+                            }
+                          }}
                         >
-                          {isAuthenticated
-                            ? t.hackathonsSection.joinNowBtn
-                            : t.hackathonsSection.participateBtn}
-                          <ArrowRight className="ml-2 h-4 w-4" />
+                          {!regState.canRegister && (
+                            <Lock className="mr-2 h-4 w-4 shrink-0" />
+                          )}
+                          {regState.canRegister
+                            ? isAuthenticated
+                              ? t.hackathonsSection.joinNowBtn
+                              : t.hackathonsSection.participateBtn
+                            : regState.buttonText}
+                          {regState.canRegister && (
+                            <ArrowRight className="ml-2 h-4 w-4 shrink-0" />
+                          )}
                         </Button>
                       )}
                     </div>

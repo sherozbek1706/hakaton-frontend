@@ -53,6 +53,7 @@ import {
   type AuthStep,
 } from "@/components/student-auth-flow";
 import type { HackathonTask } from "@/types/hackathon";
+import { getHackathonRegistrationState } from "@/lib/hackathon-registration";
 
 const TEN_HOURS_MS = 10 * 60 * 60 * 1000;
 
@@ -518,32 +519,87 @@ export default function HackathonArenaPage() {
               </div>
             </section>
 
-            {/* If user is not registered yet, prompt them to join */}
+            {/* If user is not registered yet, prompt them to join or show closed status */}
             {!ws?.isRegistered ? (
-              <section className="rounded-2xl border bg-card/95 p-8 text-center space-y-3">
-                <h3 className="text-lg font-bold">{wt.notRegisteredTitle}</h3>
-                <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                  {wt.notRegisteredDesc}
-                </p>
-                <Button
-                  className="h-10 px-6 text-sm"
-                  disabled={joinMutation.isPending}
-                  onClick={async () => {
-                    if (!token) return;
-                    try {
-                      await joinMutation.mutateAsync({
-                        hackathonId,
-                        token,
-                      });
-                      toast.success("Ro'yxatdan o'tdingiz!");
-                    } catch (err: any) {
-                      toast.error(err?.response?.data?.message || "Error");
-                    }
-                  }}
-                >
-                  {wt.joinBtn}
-                </Button>
-              </section>
+              (() => {
+                const regState = getHackathonRegistrationState(hackathon, lang);
+                if (!regState.canRegister) {
+                  return (
+                    <section className="rounded-2xl border border-dashed bg-card/95 p-8 text-center space-y-4">
+                      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-secondary/80">
+                        {regState.statusKey === "not_started" ? (
+                          <Clock className="h-6 w-6 text-foreground" />
+                        ) : (
+                          <Lock className="h-6 w-6 text-foreground" />
+                        )}
+                      </div>
+                      <div className="space-y-1.5 max-w-lg mx-auto">
+                        <h3 className="text-xl font-bold tracking-tight">
+                          {regState.statusKey === "not_started"
+                            ? lang === "ru"
+                              ? "Регистрация еще не открыта"
+                              : "Ro'yxatdan o'tish hali ochilmagan"
+                            : regState.statusKey === "closed"
+                            ? lang === "ru"
+                              ? "Регистрация в данный момент закрыта"
+                              : "Hozircha ro'yxatdan o'tish yopiq"
+                            : regState.statusKey === "paused"
+                            ? lang === "ru"
+                              ? "Хакатон временно приостановлен"
+                              : "Hakaton vaqtincha to'xtatilgan"
+                            : lang === "ru"
+                            ? "Прием заявок завершен"
+                            : "Qabul muddati yakunlangan"}
+                        </h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {regState.detailMessage}
+                        </p>
+                      </div>
+                      <div>
+                        <Button
+                          disabled
+                          variant="outline"
+                          className="h-10 px-6 text-sm opacity-75 cursor-not-allowed"
+                        >
+                          <Lock className="mr-2 h-4 w-4" />
+                          {regState.buttonText}
+                        </Button>
+                      </div>
+                    </section>
+                  );
+                }
+
+                return (
+                  <section className="rounded-2xl border bg-card/95 p-8 text-center space-y-3">
+                    <h3 className="text-lg font-bold">{wt.notRegisteredTitle}</h3>
+                    <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                      {wt.notRegisteredDesc}
+                    </p>
+                    <Button
+                      className="h-10 px-6 text-sm"
+                      disabled={joinMutation.isPending}
+                      onClick={async () => {
+                        if (!token) return;
+                        try {
+                          await joinMutation.mutateAsync({
+                            hackathonId,
+                            token,
+                          });
+                          toast.success(
+                            lang === "ru"
+                              ? "Вы успешно зарегистрировались!"
+                              : "Ro'yxatdan o'tdingiz!"
+                          );
+                        } catch (err: any) {
+                          toast.error(err?.response?.data?.message || "Error");
+                        }
+                      }}
+                    >
+                      {wt.joinBtn}
+                    </Button>
+                  </section>
+                );
+              })()
             ) : (
               /* ========================================================= */
               /* 2. TASKS & SUBMISSIONS SECTION */
